@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" href="icon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ứng Dụng Bản Đồ Có GPS Định Vị</title>
+    <title>GoFast Map</title>
     
     <!-- Nhúng thư viện đồ họa và cấu trúc CSS của Goong Maps -->
     <script src='https://cdn.jsdelivr.net/npm/@goongmaps/goong-js@1.0.9/dist/goong-js.js'></script>
@@ -13,8 +14,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div id="sidebar">
+    <aside id="sidebar">
         <h2>Bản Đồ Di Chuyển Nhanh</h2>
         <div id="gps-status">🔴 GPS: Đang tắt</div>
 
@@ -30,14 +30,20 @@
             <div id="end-suggestions" class="suggestions"></div>
         </div>
 
-        <button onclick="calculateRoute()">Tìm Đường Tối Ưu</button>
-        <button id="gps-btn" class="btn-gps" onclick="toggleGPS()">Bật Định Vị GPS Thực Tế</button>
+        <button id="route-btn">Tìm Đường Tối Ưu</button>
+        <button id="gps-btn" class="btn-gps">
+            Bật Định Vị GPS Thực Tế
+        </button>
 
         <div id="result-box">
             <p><b>Thời gian dự kiến:</b> <span id="txt-duration" style="font-weight: bold; color: #e74c3c;">--</span></p>
             <p><b>Tổng quãng đường:</b> <span id="txt-distance" style="font-weight: bold; color: #2980b9;">--</span></p>
         </div>
-    </div>
+    </aside>
+
+    <div id="overlay"></div>
+
+    <button id="toggle-menu-btn" class="toggle-btn">☰</button>
 
     <div id="map"></div>
 

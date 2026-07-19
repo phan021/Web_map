@@ -1,6 +1,157 @@
-body { margin: 0; padding: 0; display: flex; font-family: 'Segoe UI', Arial, sans-serif; }
-#sidebar { width: 340px; padding: 25px; background: #ffffff; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 1; display: flex; flex-direction: column; }
-#map { flex: 1; height: 100vh; }
+body { 
+    margin: 0; 
+    padding: 0; 
+    position: relative; /* Giúp quản lý absolute của map và sidebar tốt hơn */
+    font-family: 'Segoe UI', Arial, sans-serif; 
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Thẻ chứa bản đồ chiếm trọn màn hình phía dưới */
+#map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 1;
+    display: block !important;
+}
+
+/* Định dạng bảng điều khiển ẩn/hiện mượt mà */
+#sidebar { 
+    position: absolute;
+    top: 0;
+    left: -370px; /* Ẩn toàn bộ sidebar (340px rộng + 20px shadow/padding nếu có) sang trái */
+    width: 350px;
+    max-width:90%; 
+    height: 100vh;
+    padding: 20px; 
+    background: #fafafa; 
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    overflow-y:auto;
+    border-radius:0 18px 18px 0;
+    box-shadow:0 8px 30px rgba(0,0,0,.15);
+    z-index:998;
+    transition: left 0.35s ease; /* Hiệu ứng trượt */
+}
+
+/* Khi có class 'active' do JS kích hoạt thì trượt sidebar ra */
+#sidebar.active {
+    left: 0;
+}
+
+/* Nút ba chấm cố định */
+.toggle-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    width: 48px;
+    height: 48px; 
+    background-color: #ffffff;
+    border:none;
+    border-radius:12px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size: 26px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,.15);
+    z-index: 999;
+    transition: left 0.3s ease;
+    
+    /* THÊM 2 DÒNG NÀY ĐỂ FIX LỖI BỊ KÉO DÀI */
+    width: auto !important;
+    color: #2c3e50; /* Đổi màu chữ dấu ba chấm thành màu tối để dễ nhìn */
+}
+/* Hover */
+
+.toggle-btn:hover{
+    background:#0d6efd;
+    color:white;
+    transform:scale(1.08);
+}
+
+/* K
+/* Đẩy nút ba chấm dịch sang phải khi menu đang mở để không bị che */
+#sidebar.active + .toggle-btn,
+#sidebar.active ~ .toggle-btn {
+    left: 365px; 
+}
+
+/* ==========================
+   NÚT ĐÓNG (X)
+========================== */
+.close-btn{
+    position:absolute;
+    top:15px;
+    right:15px;
+    width:40px;
+    height:40px;
+    border:none;
+    border-radius:50%;
+    background:#f1f5f9;
+    color:#2c3e50;
+    font-size:22px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.close-btn:hover{
+    background:#ef4444;
+    color:white;
+    transform:rotate(90deg);
+}
+
+/* ==========================
+   SCROLL
+========================== */
+#sidebar::-webkit-scrollbar{
+    width:6px;
+}
+
+#sidebar::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:10px;
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
+@media (max-width:768px){
+    #sidebar{
+        width:90%;
+        left:-100%;
+        border-radius:0 16px 16px 0;
+    }
+    #sidebar.active{
+        left:0;
+    }
+    #sidebar.active + .toggle-btn,
+    #sidebar.active ~ .toggle-btn{
+        left:calc(90% + 10px);
+    }
+}
+
+@media (max-width:480px){
+    .toggle-btn{
+        width:44px;
+        height:44px;
+        font-size:24px;
+        top:12px;
+        left:12px;
+    }
+    .close-btn{
+        width:36px;
+        height:36px;
+        font-size:20px;
+    }
+}
+/* --- Các thành phần UI bên trong giữ nguyên cấu hình đẹp của bạn --- */
 h2 { margin-top: 0; color: #2c3e50; font-size: 22px; border-bottom: 2px solid #eaeaea; padding-bottom: 10px; }
 .input-group { margin-bottom: 18px; position: relative; }
 label { font-weight: 600; font-size: 14px; color: #34495e; display: block; margin-bottom: 6px; }
@@ -9,7 +160,7 @@ input:focus { border-color: #3498db; outline: none; }
 
 .suggestions { 
     position: absolute; width: 100%; background: white; border: 1px solid #dcdde1; 
-    max-height: 220px; overflow-y: auto; z-index: 99; border-radius: 6px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); display: none; margin-top: 2px;
+    max-height: 220px; overflow-y: auto; z-index: 9999; border-radius: 6px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); display: none; margin-top: 2px;
 }
 .suggestion-item { padding: 12px; cursor: pointer; font-size: 13.5px; color: #2f3640; border-bottom: 1px solid #f5f6fa; }
 .suggestion-item:hover { background-color: #f1f2f6; color: #2980b9; }
@@ -24,9 +175,3 @@ button:hover { background: #27ae60; }
 #result-box { margin-top: 25px; padding: 15px; background: #f8f9fa; border-left: 5px solid #2ecc71; border-radius: 4px; display: none; }
 #result-box p { margin: 8px 0; font-size: 15px; color: #2c3e50; }
 #gps-status { font-size: 13px; font-weight: bold; margin-bottom: 10px; color: #7f8c8d; }
-#map {
-    width: 100%;
-    height: 100vh; /* Hoặc một số pixel cố định như 500px để test thử */
-    position: relative;
-    display: block !important;
-}
