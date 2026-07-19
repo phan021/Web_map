@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng Dụng Bản Đồ Có GPS Định Vị</title>
+    
+    <!-- Nhúng thư viện đồ họa và cấu trúc CSS của Goong Maps -->
+    <script src='https://cdn.jsdelivr.net/npm/@goongmaps/goong-js@1.0.9/dist/goong-js.js'></script>
+    <link href='https://cdn.jsdelivr.net/npm/@goongmaps/goong-js@1.0.9/dist/goong-js.css' rel='stylesheet' />
+    
+    <!-- Liên kết tới file CSS riêng biệt -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="sidebar">
+        <h2>Bản Đồ Di Chuyển Nhanh</h2>
+        <div id="gps-status">🔴 GPS: Đang tắt</div>
+
+        <div class="input-group">
+            <label>Điểm đi:</label>
+            <input type="text" id="start-search" placeholder="Nhập địa điểm bắt đầu..." autocomplete="off">
+            <div id="start-suggestions" class="suggestions"></div>
+        </div>
+        
+        <div class="input-group">
+            <label>Điểm đến:</label>
+            <input type="text" id="end-search" placeholder="Nhập địa điểm kết thúc..." autocomplete="off">
+            <div id="end-suggestions" class="suggestions"></div>
+        </div>
+
+        <button onclick="calculateRoute()">Tìm Đường Tối Ưu</button>
+        <button id="gps-btn" class="btn-gps" onclick="toggleGPS()">Bật Định Vị GPS Thực Tế</button>
+
+        <div id="result-box">
+            <p><b>Thời gian dự kiến:</b> <span id="txt-duration" style="font-weight: bold; color: #e74c3c;">--</span></p>
+            <p><b>Tổng quãng đường:</b> <span id="txt-distance" style="font-weight: bold; color: #2980b9;">--</span></p>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- Liên kết tới file Javascript riêng biệt ở cuối body -->
+    <script src="script.js"></script>
+</body>
+</html>
