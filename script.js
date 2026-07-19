@@ -136,24 +136,18 @@ function setupAutocomplete(inputId, suggestionsId, onSelectCallback) {
                         const dataDetail = await resDetail.json();
                         const location = dataDetail.result.geometry.location;
                         onSelectCallback(location.lat, location.lng);
-                        if(window.innerWidth<768){
-                            document.getElementById("sidebar").classList.remove("active");
-                            document.getElementById("overlay").classList.remove("active");
-                            document.getElementById("toggle-menu-btn").innerHTML="☰";
-                        }
+                        
+                        // ĐÃ XÓA đoạn code tự động ẩn menu tại đây để tránh bị out menu trên iPhone
                     };
                     suggestionsEl.appendChild(div);
                 });
+            } else {
+                suggestionsEl.innerHTML = "<div class='suggestion-item'>Không tìm thấy địa điểm</div>";
             }
-            else{
-                suggestionsEl.innerHTML =
-                "<div class='suggestion-item'>Không tìm thấy địa điểm</div>";
-            }
-        }   catch(e){
-                console.error(e);
-                suggestionsEl.innerHTML =
-                "<div class='suggestion-item'>Lỗi kết nối</div>";
-            }
+        } catch(e) {
+            console.error(e);
+            suggestionsEl.innerHTML = "<div class='suggestion-item'>Lỗi kết nối</div>";
+        }
     });
     document.addEventListener('click', function(e) { if (e.target !== inputEl) { suggestionsEl.style.display = 'none'; } });
 }
