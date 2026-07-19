@@ -16,6 +16,39 @@ map.addControl(new goongjs.NavigationControl(), 'top-right');
 setupAutocomplete('start-search', 'start-suggestions', (lat, lng) => { startCoords = `${lat},${lng}`; });
 setupAutocomplete('end-search', 'end-suggestions', (lat, lng) => { endCoords = `${lat},${lng}`; });
 
+document.addEventListener("DOMContentLoaded", () => {
+
+    const sidebar = document.getElementById("sidebar");
+    const toggleBtn = document.getElementById("toggle-menu-btn");
+    const closeBtn = document.getElementById("close-sidebar");
+    const overlay = document.getElementById("overlay");
+
+    function openMenu(){
+        sidebar.classList.add("active");
+        overlay.classList.add("active");
+        toggleBtn.innerHTML="✕";
+    }
+
+    function closeMenu(){
+        sidebar.classList.remove("active");
+        overlay.classList.remove("active");
+        toggleBtn.innerHTML="☰";
+    }
+
+    toggleBtn.onclick=()=>{
+        if(sidebar.classList.contains("active")){
+            closeMenu();
+        }else{
+            openMenu();
+        }
+    }
+    if (overlay) {
+        overlay.onclick = closeMenu;
+    }
+    document.getElementById('route-btn').onclick = calculateRoute;
+    document.getElementById('gps-btn').onclick = toggleGPS;
+});
+
 function toggleGPS() {
     const gpsBtn = document.getElementById('gps-btn');
     const gpsStatus = document.getElementById('gps-status');
@@ -49,19 +82,28 @@ function toggleGPS() {
                 if (userMarker) {
                     userMarker.setLngLat([lng, lat]);
                 } else {
-                    userMarker = new goongjs.Marker({ color: '#3498db' }).setLngLat([lng, lat]).addTo(map);
+                    userMarker = new goongjs.Marker({ color: '#0d6efd' }).setLngLat([lng, lat]).addTo(map);
                 }
 
                 if (endCoords) {
                     calculateRoute();
                 } else {
-                    map.flyTo({ center: [lng, lat], zoom: 15 });
+                    map.flyTo({
+                        center:[lng,lat],
+                        zoom:16,
+                        speed:1.2,
+                        curve:1.4,
+                        essential:true
+                    });
                 }
             },
-            (error) => {
+          (error) => {
                 console.error(error);
-                alert("Vui lòng cấp quyền vị trí!");
-                toggleGPS();
+                gpsStatus.innerText = "🔴 GPS: Không có quyền";
+                gpsBtn.innerText = "Bật Định Vị GPS";
+                gpsBtn.classList.remove("active");
+                watchId = null;
+                alert("Vui lòng cấp quyền vị trí.");
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
@@ -77,6 +119,8 @@ function setupAutocomplete(inputId, suggestionsId, onSelectCallback) {
         if (keyword.length < 2) { suggestionsEl.style.display = 'none'; return; }
 
         const url = `https://rsapi.goong.io/Place/AutoComplete?api_key=${GOONG_API_KEY}&input=${encodeURIComponent(keyword)}`;
+        suggestionsEl.innerHTML = "<div class='suggestion-item'>Đang tìm...</div>";
+        suggestionsEl.style.display = "block";
         try {
             const response = await fetch(url);
             const data = await response.json();
@@ -92,11 +136,24 @@ function setupAutocomplete(inputId, suggestionsId, onSelectCallback) {
                         const dataDetail = await resDetail.json();
                         const location = dataDetail.result.geometry.location;
                         onSelectCallback(location.lat, location.lng);
+                        if(window.innerWidth<768){
+                            document.getElementById("sidebar").classList.remove("active");
+                            document.getElementById("overlay").classList.remove("active");
+                            document.getElementById("toggle-menu-btn").innerHTML="☰";
+                        }
                     };
                     suggestionsEl.appendChild(div);
                 });
             }
-        } catch (e) { console.error(e); }
+            else{
+                suggestionsEl.innerHTML =
+                "<div class='suggestion-item'>Không tìm thấy địa điểm</div>";
+            }
+        }   catch(e){
+                console.error(e);
+                suggestionsEl.innerHTML =
+                "<div class='suggestion-item'>Lỗi kết nối</div>";
+            }
     });
     document.addEventListener('click', function(e) { if (e.target !== inputEl) { suggestionsEl.style.display = 'none'; } });
 }
@@ -104,6 +161,9 @@ function setupAutocomplete(inputId, suggestionsId, onSelectCallback) {
 async function calculateRoute() {
     if (!startCoords || !endCoords) { alert("Vui lòng chọn điểm kết thúc!"); return; }
     const url = `https://rsapi.goong.io/Direction?origin=${startCoords}&destination=${endCoords}&vehicle=car&api_key=${GOONG_API_KEY}`;
+    const routeBtn = document.getElementById("route-btn");
+    routeBtn.disabled = true;
+    routeBtn.innerText = "Đang tìm...";
     try {
         const response = await fetch(url);
         const data = await response.json();
@@ -117,9 +177,19 @@ async function calculateRoute() {
             document.getElementById('result-box').style.display = 'block';
 
             const points = polylineDecode(route.overview_polyline.points);
+            if(map.getLayer("route_line")){
+                map.removeLayer("route_line");
+                map.removeSource("route_line");
+            }
             drawRoute(points);
+            routeBtn.disabled = false;
+            routeBtn.innerText = "Tìm Đường Tối Ưu";
         }
-    } catch (error) { console.error(error); }
+    } catch(error){
+        console.error(error);
+        routeBtn.disabled = false;
+        routeBtn.innerText = "Tìm Đường Tối Ưu";
+        }
 }
 
 function drawRoute(coordinates) {
@@ -136,8 +206,7 @@ function drawRoute(coordinates) {
     }
     if (watchId === null) {
         const bounds = coordinates.reduce((acc, coord) => acc.extend(coord), new goongjs.LngLatBounds(coordinates[0], coordinates[0]));
-        map.fitBounds(bounds, { padding: 60 });
-    }
+        map.fitBounds(bounds, { padding:{top:80,bottom:80,left:80,right:80} });}
 }
 
 function polylineDecode(str, precision) {
